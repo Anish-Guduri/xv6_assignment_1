@@ -193,6 +193,9 @@ UPROGS=\
 	_wc\
 	_zombie\
 
+# my user programs
+UPROGS += _history
+
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
 

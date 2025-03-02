@@ -37,3 +37,9 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+// int sys_gethistory(void);
+
+
+// my code starts here
+int gethistory(int n, char *buf);
+int addhistory(char *cmd);
