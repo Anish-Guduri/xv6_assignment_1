@@ -158,15 +158,42 @@ main(void)
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
 
-    addhistory(buf);  // my code
+    // addhistory(buf);  // my code
 
-    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
-      // Chdir must be called by the parent, not the child.
-      buf[strlen(buf)-1] = 0;  // chop \n
-      if(chdir(buf+3) < 0)
-        printf(2, "cannot cd %s\n", buf+3);
-      continue;
-    }
+//     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
+//       // Chdir must be called by the parent, not the child.
+//       buf[strlen(buf)-1] = 0;  // chop \n
+//       if(chdir(buf+3) < 0)
+//         printf(2, "cannot cd %s\n", buf+3);
+//       continue;
+//     }
+//     if (buf[0] == 'b' && buf[1] == 'l' && buf[2] == 'o' && buf[3] == 'c' && buf[4] == 'k' && buf[5] == ' ') {
+//       int num = atoi(buf + 6);
+//       if (block(num) < 0) {
+//           printf("Failed to block syscall %d\n", num);
+//       } else {
+//           printf("Blocked syscall %d\n", num);
+//       }
+//       continue;
+//   }
+  
+//   if (buf[0] == 'u' && buf[1] == 'n' && buf[2] == 'b' && buf[3] == 'l' && buf[4] == 'o' && buf[5] == 'c' && buf[6] == 'k' && buf[7] == ' ') {
+//       int num = atoi(buf + 8);
+//       if (unblock(num) < 0) {
+//           printf("Failed to unblock syscall %d\n", num);
+//       } else {
+//           printf("Unblocked syscall %d\n", num);
+//       }
+//       continue;
+//   }
+//   // For the 'history' command:
+// if (buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' &&
+//   buf[3] == 't' && buf[4] == 'o' && buf[5] == 'r' &&
+//   buf[6] == 'y' && (buf[7] == '\n' || buf[7] == '\0')) {
+//   // print_history();
+//   continue;
+// }
+  
     if(fork1() == 0)
       runcmd(parsecmd(buf));
     wait();
