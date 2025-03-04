@@ -7,6 +7,11 @@
 #include "proc.h"
 #include "spinlock.h"
 
+#define MAX_HISTORY_ENTRIES 10
+static struct history_entry history[MAX_HISTORY_ENTRIES];
+static int history_count = 0;
+static struct spinlock history_lock;
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -24,6 +29,7 @@ void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
+  // initlock(&history_lock, "history");
 }
 
 // Must be called with interrupts disabled
@@ -115,8 +121,10 @@ found:
   int i;
   for(i = 0; i < 64; i++){
     p->blocked_syscalls[i]=0;}
-
+  
+    p->start_time = ticks;
   return p;
+  
 }
 
 //PAGEBREAK: 32
@@ -270,9 +278,20 @@ exit(void)
         wakeup1(initproc);
     }
   }
-
+  acquire(&history_lock);
+if (history_count < MAX_HISTORY_ENTRIES) {
+  struct history_entry *entry = &history[history_count];
+  entry->pid = curproc->pid;
+  safestrcpy(entry->name, curproc->name, sizeof(entry->name));
+  entry->total_memory = curproc->sz + 4096; // sz + stack
+  entry->start_time = curproc->start_time;
+  history_count++;
+}
+release(&history_lock);
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
+
+
   sched();
   panic("zombie exit");
 }

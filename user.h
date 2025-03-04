@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+struct history_entry;
 
 // system calls
 int fork(void);
@@ -44,5 +45,6 @@ int atoi(const char*);
 // int gethistory(int n, char *buf);
 // int addhistory(char *cmd);
 
+int gethistory(struct history_entry*, int);
 int block(int);
 int unblock(int);

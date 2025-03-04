@@ -16,6 +16,14 @@
 int cmd_block(char **);
 int cmd_unblock(char **);
 
+
+struct history_entry {
+  int pid;
+  char name[16];
+  uint total_memory;
+  uint start_time;
+};
+
 struct cmd {
   int type;
 };
@@ -73,6 +81,7 @@ runcmd(struct cmd *cmd)
   switch(cmd->type){
   default:
     panic("runcmd");
+  
 
   case EXEC:
     ecmd = (struct execcmd*)cmd;
@@ -123,7 +132,25 @@ runcmd(struct cmd *cmd)
     wait();
     wait();
     break;
-
+  
+// Add this case to the switch statement in runcmd()
+// case CMD_HISTORY:   // Added case
+//   struct history_entry entries[64];
+//   int count = gethistory(entries, 64);
+//   if (count < 0) {
+//     printf(2, "Failed to retrieve history\n");
+//   } else {
+//     printf(1, "PID\tNAME\t\tMEMORY (bytes)\tSTART TIME\n");
+//     for (int i = 0; i < count; i++) {
+//         printf(1, "%d\t%s\t\t%u\t\t%u\n",
+//                 entries[i].pid,
+//                 entries[i].name,
+//                 entries[i].total_memory,
+//                 entries[i].start_time);
+//       }
+//     }
+// break;
+  
   case BACK:
     bcmd = (struct backcmd*)cmd;
     if(fork1() == 0)
@@ -258,13 +285,28 @@ main(void)
       continue;
     }
     // add_to_history(buf);
-//   // For the 'history' command:
-// if (buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' &&
-//   buf[3] == 't' && buf[4] == 'o' && buf[5] == 'r' &&
-//   buf[6] == 'y' && (buf[7] == '\n' || buf[7] == '\0')) {
-//   // print_history();
-//   continue;
-// }
+  // For the 'history' command:
+if (buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' &&
+  buf[3] == 't' && buf[4] == 'o' && buf[5] == 'r' &&
+  buf[6] == 'y' && (buf[7] == '\n' || buf[7] == '\0')) {
+
+    struct history_entry entries[64];
+    int count = gethistory(entries, 64);
+    if (count < 0) {
+        printf(2, "Failed to retrieve history\n");
+    } else {
+        printf(1, "PID\tNAME\t\tMEMORY (bytes)\tSTART TIME\n");
+        for (int i = 0; i < count; i++) {
+            printf(1, "%d\t%s\t\t%u\t\t%u\n",
+                   entries[i].pid,
+                   entries[i].name,
+                   entries[i].total_memory,
+                   entries[i].start_time);
+        }
+    }
+  // print_history();
+  continue;
+}
   
     if(fork1() == 0)
       runcmd(parsecmd(buf));

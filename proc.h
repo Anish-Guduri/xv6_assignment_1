@@ -13,6 +13,11 @@ struct cpu {
 extern struct cpu cpus[NCPU];
 extern int ncpu;
 
+
+// #define MAX_HISTORY_ENTRIES 64
+// static struct history_entry history[MAX_HISTORY_ENTRIES];
+// static int history_count = 0;
+// static struct spinlock history_lock;
 //PAGEBREAK: 17
 // Saved registers for kernel context switches.
 // Don't need to save all the segment registers (%cs, etc),
@@ -50,6 +55,16 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   char blocked_syscalls[64];    // Bit array of blocked syscalls
+  uint start_time;
+
+
+};
+
+struct history_entry {
+  int pid;
+  char name[16];
+  uint total_memory;
+  uint start_time;
 };
 
 // Process memory is laid out contiguously, low addresses first:

@@ -6,7 +6,13 @@
 #include "defs.h"
 #include "x86.h"
 #include "elf.h"
+#include "spinlock.h"
 
+
+#define MAX_HISTORY_ENTRIES 64
+static struct history_entry history[MAX_HISTORY_ENTRIES];
+static int history_count = 0;
+// static struct spinlock history_lock;
 int
 exec(char *path, char **argv)
 {
@@ -99,6 +105,19 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
+
+//   acquire(&history_lock);
+// if (history_count < MAX_HISTORY_ENTRIES) {
+//   struct history_entry *entry = &history[history_count];
+//   entry->pid = curproc->pid;
+//   safestrcpy(entry->name, curproc->name, sizeof(entry->name));
+//   entry->total_memory = curproc->sz + 4096; // sz + stack
+//   entry->start_time = curproc->start_time;
+//   history_count++;
+// }
+// release(&history_lock);
+
+
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;
