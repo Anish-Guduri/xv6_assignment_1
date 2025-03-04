@@ -112,6 +112,10 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  int i;
+  for(i = 0; i < 64; i++){
+    p->blocked_syscalls[i]=0;}
+
   return p;
 }
 
@@ -217,6 +221,12 @@ fork(void)
   np->state = RUNNABLE;
 
   release(&ptable.lock);
+
+
+int j;
+  for(j = 0; j < 64; j++){
+    np->blocked_syscalls[j] = curproc->blocked_syscalls[j];
+  }
 
   return pid;
 }

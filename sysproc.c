@@ -155,3 +155,35 @@ sys_addhistory(void)
   
   return 0;
 }
+
+int
+sys_block(void)
+{
+  int syscall_id;
+  if(argint(0, &syscall_id) < 0)
+    return -1;
+  
+  // Get current process
+  struct proc *curproc = myproc();
+  
+  // Block the syscall
+  curproc->blocked_syscalls[syscall_id] = 1;
+  cprintf("Blocked syscall %d\n", syscall_id);
+  
+  return 0;
+}
+
+int
+sys_unblock(void)
+{
+  int syscall_id;
+  if(argint(0, &syscall_id) < 0)
+    return -1;
+  
+  // Get current process
+  struct proc *curproc = myproc();
+  
+  // Unblock the syscall
+  curproc->blocked_syscalls[syscall_id] = 0;
+return 0;
+}

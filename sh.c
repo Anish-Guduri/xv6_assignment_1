@@ -13,6 +13,9 @@
 
 #define MAXARGS 10
 
+int cmd_block(char **);
+int cmd_unblock(char **);
+
 struct cmd {
   int type;
 };
@@ -140,6 +143,72 @@ getcmd(char *buf, int nbuf)
     return -1;
   return 0;
 }
+int
+cmd_block(char *argv[])
+{
+  if(argv[1] == 0) {
+    printf(2, "Usage: block <syscall_id>\n");
+    return -1;
+  }
+  
+  int syscall_id = atoi(argv[1]);
+  if(syscall_id < 0 || syscall_id >= 64) {
+    printf(2, "Invalid syscall ID\n");
+    return -1;
+  }
+  
+  if(block(syscall_id) < 0) {
+    printf(2, "block failed\n");
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+cmd_unblock(char *argv[])
+{
+  if(argv[1] == 0) {
+    printf(2, "Usage: unblock <syscall_id>\n");
+    return -1;
+  }
+  
+  int syscall_id = atoi(argv[1]);
+  if(syscall_id < 0 || syscall_id >= 64) {
+    printf(2, "Invalid syscall ID\n");
+    return -1;
+  }
+  
+  if(unblock(syscall_id) < 0) {
+    printf(2, "unblock failed\n");
+    return -1;
+  }
+  
+  return 0;
+}
+
+// sh.c
+// void block_command(char *syscall_id_str) {
+//   int syscall_id = atoi(syscall_id_str);
+//   if (syscall_id < 0) {
+//       printf(2, "Invalid syscall ID\n");
+//       return;
+//   }
+//   if (syscall(SYS_block, syscall_id) < 0) {
+//       printf(2, "Failed to block syscall %d\n", syscall_id);
+//   }
+// }
+
+// void unblock_command(char *syscall_id_str) {
+//   int syscall_id = atoi(syscall_id_str);
+//   if (syscall_id < 0) {
+//       printf(2, "Invalid syscall ID\n");
+//       return;
+//   }
+//   if (syscall(SYS_unblock, syscall_id) < 0) {
+//       printf(2, "Failed to unblock syscall %d\n", syscall_id);
+//   }
+// }
 
 int
 main(void)
@@ -160,32 +229,35 @@ main(void)
 
     // addhistory(buf);  // my code
 
-//     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
-//       // Chdir must be called by the parent, not the child.
-//       buf[strlen(buf)-1] = 0;  // chop \n
-//       if(chdir(buf+3) < 0)
-//         printf(2, "cannot cd %s\n", buf+3);
-//       continue;
-//     }
-//     if (buf[0] == 'b' && buf[1] == 'l' && buf[2] == 'o' && buf[3] == 'c' && buf[4] == 'k' && buf[5] == ' ') {
-//       int num = atoi(buf + 6);
-//       if (block(num) < 0) {
-//           printf("Failed to block syscall %d\n", num);
-//       } else {
-//           printf("Blocked syscall %d\n", num);
-//       }
-//       continue;
-//   }
-  
-//   if (buf[0] == 'u' && buf[1] == 'n' && buf[2] == 'b' && buf[3] == 'l' && buf[4] == 'o' && buf[5] == 'c' && buf[6] == 'k' && buf[7] == ' ') {
-//       int num = atoi(buf + 8);
-//       if (unblock(num) < 0) {
-//           printf("Failed to unblock syscall %d\n", num);
-//       } else {
-//           printf("Unblocked syscall %d\n", num);
-//       }
-//       continue;
-//   }
+    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
+      // Chdir must be called by the parent, not the child.
+      buf[strlen(buf)-1] = 0;  // chop \n
+      if(chdir(buf+3) < 0)
+        printf(2, "cannot cd %s\n", buf+3);
+      continue;
+    }
+    if(buf[0] == 'b' && buf[1] == 'l' && buf[2] == 'o' && buf[3] == 'c' && buf[4] == 'k' && buf[5] == ' '){
+      // Block syscall
+      buf[strlen(buf)-1] = 0;  // chop \n
+      char *args[3];
+      args[0] = "block";
+      args[1] = buf+6;
+      // args[2] = 0;
+      cmd_block(args);
+      continue;
+    }
+    
+    if(buf[0] == 'u' && buf[1] == 'n' && buf[2] == 'b' && buf[3] == 'l' && buf[4] == 'o' && buf[5] == 'c' && buf[6] == 'k' && buf[7] == ' '){
+      // Unblock syscall
+      buf[strlen(buf)-1] = 0;  // chop \n
+      char *args[3];
+      args[0] = "unblock";
+      args[1] = buf+8;
+      args[2] = 0;
+      cmd_unblock(args);
+      continue;
+    }
+    // add_to_history(buf);
 //   // For the 'history' command:
 // if (buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' &&
 //   buf[3] == 't' && buf[4] == 'o' && buf[5] == 'r' &&

@@ -41,5 +41,8 @@ int atoi(const char*);
 
 
 // my code starts here
-int gethistory(int n, char *buf);
-int addhistory(char *cmd);
+// int gethistory(int n, char *buf);
+// int addhistory(char *cmd);
+
+int block(int);
+int unblock(int);

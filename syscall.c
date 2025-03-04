@@ -7,6 +7,9 @@
 #include "x86.h"
 #include "syscall.h"
 
+
+// extern int sys_block(void);  // my code
+// extern int sys_unblock(void);  // my code
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
 // Arguments on the stack, from the user call to the C
@@ -104,6 +107,8 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_gethistory(void);  // my code
+extern int sys_block(void);  // my code
+extern int sys_unblock(void);  // my code
 // extern int sys_addhistory(void);  // my code
 
 
@@ -130,6 +135,8 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_gethistory] sys_gethistory,
+[SYS_block]   sys_block,
+[SYS_unblock] sys_unblock,
 
 
 };
@@ -141,7 +148,13 @@ syscall(void)
   struct proc *curproc = myproc();
 
   num = curproc->tf->eax;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) { 
+
+    if(curproc->parent && 
+      curproc->parent->blocked_syscalls[num] ) {
+     curproc->tf->eax = -1;
+return;}
+
     curproc->tf->eax = syscalls[num]();
   } else {
     cprintf("%d %s: unknown sys call %d\n",
