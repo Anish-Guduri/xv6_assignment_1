@@ -75,11 +75,13 @@ sys_read(void)
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
-  return fileread(f, p, n);
+  
   if(!(f->ip->mode & 1)){
     cprintf("Operation read failed\n");
     return -1;
   }
+
+  return fileread(f, p, n);
 
 }
 
@@ -92,11 +94,13 @@ sys_write(void)
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
-  return filewrite(f, p, n);
+
   if(!(f->ip->mode & 2)){
     cprintf("Operation write failed\n");
     return -1;
   }
+
+  return filewrite(f, p, n);
 }
 
 int
