@@ -76,6 +76,11 @@ sys_read(void)
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
   return fileread(f, p, n);
+  if(!(f->ip->mode & 1)){
+    cprintf("Operation read failed\n");
+    return -1;
+  }
+
 }
 
 int
@@ -88,6 +93,10 @@ sys_write(void)
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
   return filewrite(f, p, n);
+  if(!(f->ip->mode & 2)){
+    cprintf("Operation write failed\n");
+    return -1;
+  }
 }
 
 int
@@ -261,6 +270,8 @@ create(char *path, short type, short major, short minor)
     panic("create: ialloc");
 
   ilock(ip);
+  // ip->type = type;
+  ip->mode = 0b111; // my code Default: read, write, execute allowed (binary 111 = 7)
   ip->major = major;
   ip->minor = minor;
   ip->nlink = 1;
@@ -290,6 +301,16 @@ sys_open(void)
   struct file *f;
   struct inode *ip;
 
+  // After acquiring the inode 'ip':
+// if(omode & O_RDONLY && !(ip->mode & 0b100)) { // Read bit (bit 0)
+//   iunlockput(ip);
+//   return -1;
+// }
+
+// if(omode & O_WRONLY && !(ip->mode & 0b010)) { // Write bit (bit 1)
+//   iunlockput(ip);
+//   return -1;
+// }
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
 
@@ -392,14 +413,55 @@ sys_chdir(void)
   curproc->cwd = ip;
   return 0;
 }
+// my code starts here
 
+// int sys_chmod(void) {
+//   char *path;
+//   int mode;
+//   struct inode *ip;
+
+//   // Get arguments from user space
+//   if(argstr(0, &path) < 0 || argint(1, &mode) < 0) {
+//     return -1;
+//   }
+
+//   // Validate mode (0-7)
+//   if(mode < 0 || mode > 7) {
+//     return -1;
+//   }
+
+//   begin_op();
+//   if((ip = namei(path)) == 0) { // Resolve path
+//     end_op();
+    
+//     return -1;
+//   }
+
+//   ilock(ip);
+//   ip->mode = mode; // Update permissions
+//   iupdate(ip);     // Write back to disk
+//   iunlockput(ip);
+//   end_op();
+
+//   return 0;
+// }
+
+
+
+
+// my code ends here
 int
 sys_exec(void)
 {
   char *path, *argv[MAXARG];
   int i;
   uint uargv, uarg;
-
+  struct inode *ip;
+  // After acquiring the inode 'ip':
+// if(!(ip->mode & 0b001)) { // Execute bit (bit 2)
+//    iunlock(ip);
+//    return -1;
+// }
   if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
     return -1;
   }

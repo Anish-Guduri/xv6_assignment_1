@@ -6,13 +6,16 @@
 #include "defs.h"
 #include "x86.h"
 #include "elf.h"
+#include "fs.h"
 #include "spinlock.h"
+#include "sleeplock.h"
+#include "file.h"
 
 
 #define MAX_HISTORY_ENTRIES 64
 static struct history_entry history[MAX_HISTORY_ENTRIES];
 static int history_count = 0;
-// static struct spinlock history_lock;
+static struct spinlock history_lock;
 int
 exec(char *path, char **argv)
 {
@@ -33,6 +36,17 @@ exec(char *path, char **argv)
     return -1;
   }
   ilock(ip);
+  if (!(ip->mode & 4))
+  {
+    iunlockput(ip);
+    // cprintf("ip value %d\n", ip->minor);
+    cprintf("Operation execute failed\n");
+    end_op();
+
+return -1;
+
+}
+
   pgdir = 0;
 
   // Check ELF header

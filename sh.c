@@ -88,7 +88,7 @@ runcmd(struct cmd *cmd)
     if(ecmd->argv[0] == 0)
       exit();
     exec(ecmd->argv[0], ecmd->argv);
-    printf(2, "exec %s failed\n", ecmd->argv[0]);
+    // printf(2, "exec %s failed\n", ecmd->argv[0]);
     break;
 
   case REDIR:
@@ -132,25 +132,7 @@ runcmd(struct cmd *cmd)
     wait();
     wait();
     break;
-  
-// Add this case to the switch statement in runcmd()
-// case CMD_HISTORY:   // Added case
-//   struct history_entry entries[64];
-//   int count = gethistory(entries, 64);
-//   if (count < 0) {
-//     printf(2, "Failed to retrieve history\n");
-//   } else {
-//     printf(1, "PID\tNAME\t\tMEMORY (bytes)\tSTART TIME\n");
-//     for (int i = 0; i < count; i++) {
-//         printf(1, "%d\t%s\t\t%u\t\t%u\n",
-//                 entries[i].pid,
-//                 entries[i].name,
-//                 entries[i].total_memory,
-//                 entries[i].start_time);
-//       }
-//     }
-// break;
-  
+
   case BACK:
     bcmd = (struct backcmd*)cmd;
     if(fork1() == 0)
@@ -214,29 +196,6 @@ cmd_unblock(char *argv[])
   return 0;
 }
 
-// sh.c
-// void block_command(char *syscall_id_str) {
-//   int syscall_id = atoi(syscall_id_str);
-//   if (syscall_id < 0) {
-//       printf(2, "Invalid syscall ID\n");
-//       return;
-//   }
-//   if (syscall(SYS_block, syscall_id) < 0) {
-//       printf(2, "Failed to block syscall %d\n", syscall_id);
-//   }
-// }
-
-// void unblock_command(char *syscall_id_str) {
-//   int syscall_id = atoi(syscall_id_str);
-//   if (syscall_id < 0) {
-//       printf(2, "Invalid syscall ID\n");
-//       return;
-//   }
-//   if (syscall(SYS_unblock, syscall_id) < 0) {
-//       printf(2, "Failed to unblock syscall %d\n", syscall_id);
-//   }
-// }
-
 int
 main(void)
 {
@@ -284,8 +243,44 @@ main(void)
       cmd_unblock(args);
       continue;
     }
+    // Add this block after the "cd" command handling
+
+    if(buf[0] == 'c' && buf[1] == 'h' && buf[2] == 'm' && buf[3] == 'o' && buf[4] == 'd' && buf[5] == ' ') {
+      // Chmod command
+      buf[strlen(buf) - 1] = 0; // Remove newline character
+      char *args[3];
+      args[0] = "chmod";
+      args[1] = buf + 6; // Filename starts after "chmod "
+      char *space = strchr(args[1], ' '); // Find space between filename and mode
+      if(space) {
+        *space = 0; // Split filename and mode
+        args[2] = space + 1; // Mode as string
+        if(chmod(args[1], atoi(args[2])) < 0) {
+          printf(2, "Operation failed\n");
+        }
+      } else {
+        printf(2, "Usage: chmod <filename> <mode>\n");
+      }
+      continue;
+    }
+    
+
+
+
+// if(strcmp(argv[0], "chmod") == 0) {
+//   if(argc != 3) {
+//     fprintf(2, "Usage: chmod <filename> <mode>\n");
+//   } else {
+//     char *file = argv[1];
+//     int mode = atoi(argv[2]);
+//     if(chmod(file, mode) < 0) {
+//       fprintf(2, "Operation failed\n");
+//     }
+//   }
+//   continue; // Skip fork/exec for built-in command
+// }
     // add_to_history(buf);
-  // For the 'history' command:
+//   // For the 'history' command:
 if (buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' &&
   buf[3] == 't' && buf[4] == 'o' && buf[5] == 'r' &&
   buf[6] == 'y' && (buf[7] == '\n' || buf[7] == '\0')) {

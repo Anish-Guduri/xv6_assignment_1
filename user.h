@@ -48,3 +48,4 @@ int atoi(const char*);
 int gethistory(struct history_entry*, int);
 int block(int);
 int unblock(int);
+int chmod(const char*, int); 

@@ -110,7 +110,7 @@ extern int sys_gethistory(void);  // my code
 extern int sys_block(void);  // my code
 extern int sys_unblock(void);  // my code
 // extern int sys_addhistory(void);  // my code
-
+extern int sys_chmod(void); 
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -137,7 +137,7 @@ static int (*syscalls[])(void) = {
 [SYS_gethistory] sys_gethistory,
 [SYS_block]   sys_block,
 [SYS_unblock] sys_unblock,
-
+[SYS_chmod] sys_chmod,
 
 };
 

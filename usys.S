@@ -32,4 +32,5 @@ SYSCALL(uptime)
 SYSCALL(gethistory)
 SYSCALL(block)
 SYSCALL(unblock)
+SYSCALL(chmod)
 

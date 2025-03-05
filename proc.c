@@ -278,16 +278,16 @@ exit(void)
         wakeup1(initproc);
     }
   }
-  acquire(&history_lock);
-if (history_count < MAX_HISTORY_ENTRIES) {
-  struct history_entry *entry = &history[history_count];
-  entry->pid = curproc->pid;
-  safestrcpy(entry->name, curproc->name, sizeof(entry->name));
-  entry->total_memory = curproc->sz + 4096; // sz + stack
-  entry->start_time = curproc->start_time;
-  history_count++;
-}
-release(&history_lock);
+//   acquire(&history_lock);
+// if (history_count < MAX_HISTORY_ENTRIES) {
+//   struct history_entry *entry = &history[history_count];
+//   entry->pid = curproc->pid;
+//   safestrcpy(entry->name, curproc->name, sizeof(entry->name));
+//   entry->total_memory = curproc->sz + 4096; // sz + stack
+//   entry->start_time = curproc->start_time;
+//   history_count++;
+// }
+// release(&history_lock);
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
 

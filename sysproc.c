@@ -10,13 +10,16 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "fs.h"
 #include "spinlock.h"
+#include "sleeplock.h"
+#include "file.h"
 
 // My defines and includes
 #define MAX_HISTORY 10
 struct spinlock history_lock;
 struct history_entry history[MAX_HISTORY];
-static int history_count = 0;
+static int history_count;
 
 
 int sys_fork(void) {
@@ -107,6 +110,37 @@ int sys_unblock(void) {
   return 0;
 }
 
+int sys_chmod(void) {
+  char *path;
+  int mode;
+  struct inode *ip;
+
+  if(argstr(0, &path) < 0 || argint(1, &mode) < 0)
+    return -1;
+
+  // Validate mode (0-7)
+  if(mode < 0 || mode > 7)
+    return -1;
+
+  begin_op();
+  if((ip = namei(path)) == 0) {
+    end_op();
+    return -1;
+  }
+
+  ilock(ip);
+  ip->mode = mode; // Update mode (make sure 'mode' exists in inode)
+  iupdate(ip);
+  iunlock(ip);  // Corrected from iunlockput(ip);
+  end_op();
+
+  return 0;
+}
+
+
+
+
+
 // int sys_gethistory(void) {
 
 //   return 0;
@@ -167,7 +201,7 @@ int sys_gethistory(void) {
   int user_max;
   struct history_entry tmp_entries[MAX_HISTORY];
   int i, count, entries_to_copy;
-
+  // cprintf("Hello worl history\n");
   // Fix `argptr` type mismatch (use `char**` instead of `void**`)
   if(argptr(0, (char**)&user_entries, sizeof(struct history_entry)) < 0 ||
      argint(1, &user_max) < 0) {
@@ -177,6 +211,7 @@ int sys_gethistory(void) {
   if(user_max < 0) return -1;
 
   acquire(&history_lock);  // Fix undeclared `history_lock`
+  cprintf("Hello worl history  %d\n",history_count);
   count = history_count;
   if (count > MAX_HISTORY) count = MAX_HISTORY;
 
@@ -185,7 +220,9 @@ int sys_gethistory(void) {
 
   // Sort by start_time (ascending)
   for(i = 0; i < count - 1; i++) {
+    // cprintf("Hello worl history  %d\n",tmp_entries[j].start_time);
     for(int j = 0; j < count - i - 1; j++) {
+      // cprintf("Hello worl history  %d\n",tmp_entries[j].start_time);
       if(tmp_entries[j].start_time > tmp_entries[j + 1].start_time) {
         struct history_entry temp = tmp_entries[j];
         tmp_entries[j] = tmp_entries[j + 1];

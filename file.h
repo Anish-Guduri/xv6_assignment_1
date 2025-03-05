@@ -23,6 +23,7 @@ struct inode {
   short nlink;
   uint size;
   uint addrs[NDIRECT+1];
+  int mode;            // my code Permissions (3-bit)
 };
 
 // table mapping major device number to
