@@ -7,10 +7,13 @@
 #include "proc.h"
 #include "spinlock.h"
 
-#define MAX_HISTORY_ENTRIES 10
-static struct history_entry history[MAX_HISTORY_ENTRIES];
-static int history_count = 0;
-static struct spinlock history_lock;
+// #define MAX_HISTORY_ENTRIES 10
+// static struct history_entry history[MAX_HISTORY_ENTRIES];
+// static int history_count = 0;
+// static struct spinlock history_lock;
+
+// struct history cmd_history = {{0}, 0};
+// struct history cmd_history = { .count = 0 }; 
 
 struct {
   struct spinlock lock;
@@ -122,7 +125,7 @@ found:
   for(i = 0; i < 64; i++){
     p->blocked_syscalls[i]=0;}
   
-    p->start_time = ticks;
+    // p->start_time = ticks;
   return p;
   
 }

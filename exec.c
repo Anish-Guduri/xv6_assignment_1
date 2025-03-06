@@ -10,12 +10,40 @@
 #include "spinlock.h"
 #include "sleeplock.h"
 #include "file.h"
+// #include <string.h>
+
+// #include "exec.c"
+// #include "history.h"
+// #include "sh.c"
 
 
-#define MAX_HISTORY_ENTRIES 64
-static struct history_entry history[MAX_HISTORY_ENTRIES];
-static int history_count = 0;
-static struct spinlock history_lock;
+// #define MAX_HISTORY_ENTRIES 64
+// static struct history_entry history[MAX_HISTORY_ENTRIES];
+// static int history_count = 0;
+// static struct spinlock history_lock;
+
+
+#define MAX_HISTORY 16
+
+struct history_entry {
+    int pid;
+    char name[16];
+    uint memory_usage;
+};
+
+struct history {
+    struct history_entry entries[MAX_HISTORY];
+    int count;
+};
+
+// Define the global history object (this line must be active)
+// struct history cmd_history = { .count = 0 };
+struct history cmd_history = { .count = 0 };
+// Declare cmd_history as extern so it can be accessed in multiple files
+// extern struct history cmd_history;
+
+// struct history cmd_history = { .count = 0 }; 
+
 int
 exec(char *path, char **argv)
 {
@@ -35,6 +63,47 @@ exec(char *path, char **argv)
     cprintf("exec: fail\n");
     return -1;
   }
+    // Calculate total memory usage
+    uint memory_usage = curproc->sz;
+
+    // // Update history (store latest commands in circular manner)
+    // if (cmd_history.count < MAX_HISTORY) {
+    //     cmd_history.count++;
+    // }
+    // for (int i = MAX_HISTORY - 1; i > 0; i--) {
+    //     cmd_history.entries[i] = cmd_history.entries[i - 1];
+    // }
+    // cmd_history.entries[0].pid = curproc->pid;
+    // safestrcpy(cmd_history.entries[0].name, path, sizeof(cmd_history.entries[0].name));
+    // cmd_history.entries[0].memory_usage = memory_usage;
+    if ((path[0] == 's' && path[1] == 'h' && path[2] == '\0') ||
+    (path[0] == '/' && path[1] == 'i' && path[2] == 'n' && path[3] == 'i' && path[4] == 't') && path[5] == '\0') { 
+    // Skip updating history.
+} else {
+    // Update history.
+
+    if (cmd_history.count < MAX_HISTORY) {
+      int i = cmd_history.count;  // Append at the end
+      cmd_history.entries[i].pid = curproc->pid;
+      safestrcpy(cmd_history.entries[i].name, path, sizeof(cmd_history.entries[i].name));
+      // safestrcpy(cmd_history.entries[i].name, last, sizeof(cmd_history.entries[i].name));
+      cmd_history.entries[i].memory_usage = memory_usage;
+      cmd_history.count++;
+  } else {
+      // History is full. Shift entries left (discard the oldest)
+      for (int i = 0; i < MAX_HISTORY - 1; i++) {
+          cmd_history.entries[i] = cmd_history.entries[i+1];
+      }
+      int i = MAX_HISTORY - 1;
+      cmd_history.entries[i].pid = curproc->pid;
+      safestrcpy(cmd_history.entries[i].name, path, sizeof(cmd_history.entries[i].name));
+      cmd_history.entries[i].memory_usage = memory_usage;
+  }
+}
+
+
+
+
   ilock(ip);
   if (!(ip->mode & 4))
   {

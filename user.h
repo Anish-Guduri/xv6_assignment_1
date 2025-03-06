@@ -45,7 +45,10 @@ int atoi(const char*);
 // int gethistory(int n, char *buf);
 // int addhistory(char *cmd);
 
+// int gethistory(struct history_entry*, int);
+// int gethistory(void);
 int gethistory(struct history_entry*, int);
+
 int block(int);
 int unblock(int);
 int chmod(const char*, int); 

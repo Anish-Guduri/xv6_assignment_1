@@ -4,6 +4,13 @@
         "x86.h": "c",
         "spinlock.h": "c",
         "elf.h": "c",
-        "sleeplock.h": "c"
+        "sleeplock.h": "c",
+        "param.h": "c",
+        "types.h": "c",
+        "mmu.h": "c",
+        "memlayout.h": "c",
+        "user.h": "c",
+        "history.h": "c",
+        "iterator": "c"
     }
 }

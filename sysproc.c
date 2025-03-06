@@ -15,12 +15,42 @@
 #include "sleeplock.h"
 #include "file.h"
 
-// My defines and includes
-#define MAX_HISTORY 10
-struct spinlock history_lock;
-struct history_entry history[MAX_HISTORY];
-static int history_count;
 
+#define MAX_HISTORY 16
+
+struct history_entry {
+    int pid;
+    char name[16];
+    uint memory_usage;
+};
+
+struct history {
+    struct history_entry entries[MAX_HISTORY];
+    int count;
+};
+
+extern struct history cmd_history;
+
+// My defines and includes
+// #define MAX_HISTORY 10
+// struct spinlock history_lock;
+// struct history_entry history[MAX_HISTORY];
+// static int history_count;
+
+// #define MAX_HISTORY 16
+
+// struct history_entry {
+//     int pid;
+//     char name[16];
+//     uint memory_usage;
+// };
+
+// struct history {
+//     struct history_entry entries[MAX_HISTORY];
+//     int count;
+// };
+
+// struct history cmd_history = {{0}, 0}; 
 
 int sys_fork(void) {
   return fork();
@@ -86,6 +116,44 @@ int sys_uptime(void) {
 // // My code starts here
 // char command_history[MAX_HISTORY][100]; // Removed MAX_COMMAND_LEN usage
 // int history_count = 0;
+
+
+// int sys_gethistory(void) {
+//   return (int)&cmd_history;
+// }
+
+int sys_gethistory(void) {
+  struct history_entry *user_buf;
+  int max;
+  if(argptr(0, (void*)&user_buf, sizeof(*user_buf)) < 0 || argint(1, &max) < 0)
+      return -1;
+  int n = cmd_history.count;
+  if(n > max)
+      n = max;
+  if(copyout(myproc()->pgdir, (uint)user_buf, (void*)cmd_history.entries, n * sizeof(struct history_entry)) < 0)
+      return -1;
+  return n;
+}
+
+// int sys_gethistory(void) {
+//   struct history_entry *user_buf;
+//   int size;
+
+//   if (argptr(0, (void*)&user_buf, sizeof(*user_buf)) < 0 ||
+//       argint(1, &size) < 0) {
+//       return -1;
+//   }
+
+//   if (size > cmd_history.count) {
+//       size = cmd_history.count;
+//   }
+
+//   if (copyout(proc->pgdir, (uint)user_buf, (void*)cmd_history.entries, size * sizeof(struct history_entry)) < 0) {
+//       return -1;
+//   }
+
+//   return size;
+// }
 
 int sys_block(void) {
   int syscall_id;
@@ -194,134 +262,134 @@ int sys_chmod(void) {
 
 // // Declare history and lock if missing
 // struct spinlock history_lock;
-struct history_entry history[MAX_HISTORY];
+// struct history_entry history[MAX_HISTORY];
 
-int sys_gethistory(void) {
-  struct history_entry *user_entries;
-  int user_max;
-  struct history_entry tmp_entries[MAX_HISTORY];
-  int i, count, entries_to_copy;
-  // cprintf("Hello worl history\n");
-  // Fix `argptr` type mismatch (use `char**` instead of `void**`)
-  if(argptr(0, (char**)&user_entries, sizeof(struct history_entry)) < 0 ||
-     argint(1, &user_max) < 0) {
-    return -1;
-  }
-
-  if(user_max < 0) return -1;
-
-  acquire(&history_lock);  // Fix undeclared `history_lock`
-  cprintf("Hello worl history  %d\n",history_count);
-  count = history_count;
-  if (count > MAX_HISTORY) count = MAX_HISTORY;
-
-  // Fix undeclared `history`
-  for(i = 0; i < count; i++) tmp_entries[i] = history[i];
-
-  // Sort by start_time (ascending)
-  for(i = 0; i < count - 1; i++) {
-    // cprintf("Hello worl history  %d\n",tmp_entries[j].start_time);
-    for(int j = 0; j < count - i - 1; j++) {
-      // cprintf("Hello worl history  %d\n",tmp_entries[j].start_time);
-      if(tmp_entries[j].start_time > tmp_entries[j + 1].start_time) {
-        struct history_entry temp = tmp_entries[j];
-        tmp_entries[j] = tmp_entries[j + 1];
-        tmp_entries[j + 1] = temp;
-      }
-    }
-  }
-
-  entries_to_copy = (user_max < count) ? user_max : count;
-
-  // Copy to user space
-  for(i = 0; i < entries_to_copy; i++) {
-    if(copyout(myproc()->pgdir, (uint)user_entries + i * sizeof(struct history_entry),
-               &tmp_entries[i], sizeof(struct history_entry)) < 0) {
-      release(&history_lock);
-      return -1;
-    }
-  }
-
-  release(&history_lock);
-  return entries_to_copy;
-}
-
-
-
-
-
-
-
-
-
-// #include "types.h"
-// #include "x86.h"
-// #include "defs.h"
-// #include "date.h"
-// #include "param.h"
-// #include "memlayout.h"
-// #include "mmu.h"
-// #include "proc.h"
-// #include "spinlock.h"
-
-// // my defines and inlcudes
-
-// #define MAX_HISTORY 10
-// #define MAX_COMMAND_LEN 100
-
-// int
-// sys_fork(void)
-// {
-//   return fork();
-// }
-
-// int
-// sys_exit(void)
-// {
-//   exit();
-//   return 0;  // not reached
-// }
-
-// int
-// sys_wait(void)
-// {
-//   return wait();
-// }
-
-// int
-// sys_kill(void)
-// {
-//   int pid;
-
-//   if(argint(0, &pid) < 0)
+// int sys_gethistory(void) {
+//   struct history_entry *user_entries;
+//   int user_max;
+//   struct history_entry tmp_entries[MAX_HISTORY];
+//   int i, count, entries_to_copy;
+//   // cprintf("Hello worl history\n");
+//   // Fix `argptr` type mismatch (use `char**` instead of `void**`)
+//   if(argptr(0, (char**)&user_entries, sizeof(struct history_entry)) < 0 ||
+//      argint(1, &user_max) < 0) {
 //     return -1;
-//   return kill(pid);
+//   }
+
+//   if(user_max < 0) return -1;
+
+//   acquire(&history_lock);  // Fix undeclared `history_lock`
+//   cprintf("Hello worl history  %d\n",history_count);
+//   count = history_count;
+//   if (count > MAX_HISTORY) count = MAX_HISTORY;
+
+//   // Fix undeclared `history`
+//   for(i = 0; i < count; i++) tmp_entries[i] = history[i];
+
+//   // Sort by start_time (ascending)
+//   for(i = 0; i < count - 1; i++) {
+//     // cprintf("Hello worl history  %d\n",tmp_entries[j].start_time);
+//     for(int j = 0; j < count - i - 1; j++) {
+//       // cprintf("Hello worl history  %d\n",tmp_entries[j].start_time);
+//       if(tmp_entries[j].start_time > tmp_entries[j + 1].start_time) {
+//         struct history_entry temp = tmp_entries[j];
+//         tmp_entries[j] = tmp_entries[j + 1];
+//         tmp_entries[j + 1] = temp;
+//       }
+//     }
+//   }
+
+//   entries_to_copy = (user_max < count) ? user_max : count;
+
+//   // Copy to user space
+//   for(i = 0; i < entries_to_copy; i++) {
+//     if(copyout(myproc()->pgdir, (uint)user_entries + i * sizeof(struct history_entry),
+//                &tmp_entries[i], sizeof(struct history_entry)) < 0) {
+//       release(&history_lock);
+//       return -1;
+//     }
+//   }
+
+//   release(&history_lock);
+//   return entries_to_copy;
 // }
 
-// int
-// sys_getpid(void)
-// {
-//   return myproc()->pid;
-// }
 
-// int
-// sys_sbrk(void)
-// {
-//   int addr;
-//   int n;
 
-//   if(argint(0, &n) < 0)
-//     return -1;
-//   addr = myproc()->sz;
-//   if(growproc(n) < 0)
-//     return -1;
-//   return addr;
-// }
 
-// int
-// sys_sleep(void)
-// {
-//   int n;
+
+
+
+
+
+// // #include "types.h"
+// // #include "x86.h"
+// // #include "defs.h"
+// // #include "date.h"
+// // #include "param.h"
+// // #include "memlayout.h"
+// // #include "mmu.h"
+// // #include "proc.h"
+// // #include "spinlock.h"
+
+// // // my defines and inlcudes
+
+// // #define MAX_HISTORY 10
+// // #define MAX_COMMAND_LEN 100
+
+// // int
+// // sys_fork(void)
+// // {
+// //   return fork();
+// // }
+
+// // int
+// // sys_exit(void)
+// // {
+// //   exit();
+// //   return 0;  // not reached
+// // }
+
+// // int
+// // sys_wait(void)
+// // {
+// //   return wait();
+// // }
+
+// // int
+// // sys_kill(void)
+// // {
+// //   int pid;
+
+// //   if(argint(0, &pid) < 0)
+// //     return -1;
+// //   return kill(pid);
+// // }
+
+// // int
+// // sys_getpid(void)
+// // {
+// //   return myproc()->pid;
+// // }
+
+// // int
+// // sys_sbrk(void)
+// // {
+// //   int addr;
+// //   int n;
+
+// //   if(argint(0, &n) < 0)
+// //     return -1;
+// //   addr = myproc()->sz;
+// //   if(growproc(n) < 0)
+// //     return -1;
+// //   return addr;
+// // }
+
+// // int
+// // sys_sleep(void)
+// // {
+// //   int n;
 //   uint ticks0;
 
 //   if(argint(0, &n) < 0)

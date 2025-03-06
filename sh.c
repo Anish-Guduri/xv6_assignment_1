@@ -3,6 +3,17 @@
 #include "types.h"
 #include "user.h"
 #include "fcntl.h"
+// #include "exec.c"
+// #include "proc.h"
+// #include "memlayout.h"
+// #include "mmu.h"
+// #include "param.h"
+// #include "proc.h"   // Ensure proc.h is included
+#include "user.h"   // Include user.h if required
+// #include "history.h"
+// # include "sysproc.c"
+
+
 
 // Parsed command representation
 #define EXEC  1
@@ -13,16 +24,39 @@
 
 #define MAXARGS 10
 
+// #define MAX_HISTORY 16
+
+// #include "user.h"  // Use user.h for system call prototypes
+
+#define MAX_HISTORY 16
+
+struct history_entry {
+    int pid;
+    char name[16];
+    unsigned int memory_usage;
+};
+
+// struct history_entry {
+//     int pid;
+//     char name[16];
+//     uint memory_usage;
+// };
+
+// struct history {
+//     struct history_entry entries[MAX_HISTORY];
+//     int count;
+// };
+
+// Declare the global variable that is defined elsewhere.
+extern struct history cmd_history; 
+
 int cmd_block(char **);
 int cmd_unblock(char **);
 
 
-struct history_entry {
-  int pid;
-  char name[16];
-  uint total_memory;
-  uint start_time;
-};
+
+
+
 
 struct cmd {
   int type;
@@ -152,6 +186,89 @@ getcmd(char *buf, int nbuf)
     return -1;
   return 0;
 }
+// my code
+void print_history(void) {
+  struct history_entry hist[MAX_HISTORY];
+  int n = gethistory(hist, MAX_HISTORY);  // gethistory is a user-level wrapper for sys_gethistory
+  if(n < 0) {
+      printf(1, "Error retrieving history\n");
+      return;
+  }
+  for (int i = 0; i < n; i++) {
+      printf(1, "%d %s %d\n", hist[i].pid, hist[i].name, hist[i].memory_usage);
+  }
+}
+
+// void print_history() {
+//   extern struct history cmd_history; 
+//   if (cmd_history.count == 0) {
+//       printf(1, "No history available\n");
+//       return;
+//   }
+
+//   for (int i = 0; i < cmd_history.count; i++) {
+//       printf(1, "%d %s %d\n", cmd_history.entries[i].pid, cmd_history.entries[i].name, cmd_history.entries[i].memory_usage);
+//   }
+// }
+
+
+// void print_history() {
+//   struct history_entry hist[MAX_HISTORY];
+//   int count = gethistory(hist, MAX_HISTORY);
+//   if (count < 0) {
+//       printf(1, "Error: Unable to fetch history\n");
+//       return;
+//   }
+//   for (int i = 0; i < count; i++) {
+//       printf(1, "%d %s %d\n",
+//               hist[i].pid,
+//               hist[i].name,
+//               hist[i].memory_usage);
+//   }
+// }
+
+// void print_history() {
+
+//   if (cmd_history.count == 0) {
+//       printf(1, "No history available\n");
+//       return;
+//   }
+
+//   for (int i = 0; i < cmd_history.count; i++) {
+//       printf(1, "%d %s %d\n",
+//           cmd_history.entries[i].pid,
+//           cmd_history.entries[i].name,
+//           cmd_history.entries[i].memory_usage);
+//   }
+// }
+
+// void print_history() {
+//   struct history *hist = (struct history *)gethistory();
+//   if (!hist) {
+//       printf(1, "Error: Unable to fetch history\n");
+//       return;
+//   }
+
+//   for (int i = 0; i < hist->count; i++) {
+//       printf(1, "%d %s %d\n", hist->entries[i].pid, hist->entries[i].name, hist->entries[i].memory_usage);
+//   }
+// }
+
+
+// void print_history() {
+//   struct history_entry hist[MAX_HISTORY];
+//   int count = gethistory(hist, MAX_HISTORY);
+
+//   if (count < 0) {
+//       printf(1, "Error: Unable to fetch history\n");
+//       return;
+//   }
+
+//   for (int i = 0; i < count; i++) {
+//       printf(1, "%d %s %d\n", hist[i].pid, hist[i].name, hist[i].memory_usage);
+//   }
+// }
+
 int
 cmd_block(char *argv[])
 {
@@ -285,21 +402,21 @@ if (buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' &&
   buf[3] == 't' && buf[4] == 'o' && buf[5] == 'r' &&
   buf[6] == 'y' && (buf[7] == '\n' || buf[7] == '\0')) {
 
-    struct history_entry entries[64];
-    int count = gethistory(entries, 64);
-    if (count < 0) {
-        printf(2, "Failed to retrieve history\n");
-    } else {
-        printf(1, "PID\tNAME\t\tMEMORY (bytes)\tSTART TIME\n");
-        for (int i = 0; i < count; i++) {
-            printf(1, "%d\t%s\t\t%u\t\t%u\n",
-                   entries[i].pid,
-                   entries[i].name,
-                   entries[i].total_memory,
-                   entries[i].start_time);
-        }
-    }
-  // print_history();
+    // struct history_entry entries[64];
+    // int count = gethistory(entries, 64);
+    // if (count < 0) {
+    //     printf(2, "Failed to retrieve history\n");
+    // } else {
+    //     printf(1, "PID\tNAME\t\tMEMORY (bytes)\tSTART TIME\n");
+    //     for (int i = 0; i < count; i++) {
+    //         printf(1, "%d\t%s\t\t%u\t\t%u\n",
+    //                entries[i].pid,
+    //                entries[i].name,
+    //                entries[i].total_memory,
+    //                entries[i].start_time);
+    //     }
+    // }
+  print_history();
   continue;
 }
   

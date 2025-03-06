@@ -1,4 +1,8 @@
-// Per-CPU state
+// // Per-CPU state
+
+
+
+
 struct cpu {
   uchar apicid;                // Local APIC ID
   struct context *scheduler;   // swtch() here to enter scheduler
@@ -55,17 +59,25 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   char blocked_syscalls[64];    // Bit array of blocked syscalls
-  uint start_time;
+  // uint start_time;
 
 
 };
 
-struct history_entry {
-  int pid;
-  char name[16];
-  uint total_memory;
-  uint start_time;
-};
+// #define MAX_HISTORY 16  // Store last 16 commands
+// struct history_entry {
+//   int pid;
+//   char name[16];
+//   uint memory_usage;
+//   // uint start_time;
+// };
+
+// struct history {
+//   struct history_entry entries[MAX_HISTORY];
+//   int count;
+// };
+
+// extern struct history cmd_history;
 
 // Process memory is laid out contiguously, low addresses first:
 //   text
